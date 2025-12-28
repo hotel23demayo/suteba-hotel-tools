@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Generador de Fichas - fichaPax</title>
+  <link rel="stylesheet" href="../src/styles.css">
+  <style>
+    .container { max-width: 900px; margin: 40px auto; padding: 20px; background: white; border-radius: 8px; }
+    .actions { display:flex; gap:12px; margin-top:16px; }
+    .small { font-size:14px; color:#666; }
+    .code { background:#f7f7f7; padding:8px; border-radius:4px; font-family:monospace; }
+  </style>
+</head>
+<body>
+  <header class="header-container" style="background:#f8f9fa;padding:18px 0;">
+    <div style="display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <div class="logo-initial"><img src="../assets/suteba_logo_3.jpg" alt="Logo" style="width:84px;border-radius:6px"></div>
+      <div>
+        <h1 class="h1-initial" style="margin:0;font-size:20px;">Generador de Fichas (fichaPax)</h1>
+        <div class="h2-initial" style="font-size:14px;margin-top:6px;">Automatiza la creación de fichas de check‑in desde CSV</div>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:1000px;margin:28px auto;padding:0 16px;">
+    <section class="card" style="background:white;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);">
+      <div style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;">
+        <div style="flex:1 1 340px;min-width:280px;">
+          <h2 style="margin-top:0;font-size:18px;">Qué hace</h2>
+          <ul>
+            <li>Lee y agrupa el CSV por número de voucher.</li>
+            <li>Selecciona al titular (mayor edad) y agrega hasta 3 acompañantes.</li>
+            <li>Rellena la plantilla PDF y exporta una ficha por voucher en <strong>fichas/</strong>.</li>
+          </ul>
+
+          <h3 style="margin-bottom:6px;">Requisitos</h3>
+          <p class="small">Python 3 + dependencias: <code>reportlab</code> y <code>pypdf</code>.</p>
+
+          <div class="actions" style="margin-top:14px;">
+            <a class="menu-button" href="fichaPax.pdf" download>Descargar plantilla PDF</a>
+            <a class="menu-button secondary" href="../test-data-map.csv">CSV ejemplo (MAP)</a>
+            <a class="menu-button" href="../test-data-ppj.csv">CSV ejemplo (PC)</a>
+          </div>
+        </div>
+
+        <div style="flex:0 0 320px;min-width:260px;">
+          <h3 style="margin-top:0">Instalación y uso (local)</h3>
+          <div class="code">
+<pre>pip install reportlab pypdf
+python3 python/fichaPax/llenar_fichas.py
+</pre>
+          </div>
+
+          <h4 style="margin-bottom:6px;margin-top:12px;">Previsualizar (opcional)</h4>
+          <div class="code"><pre>python3 python/fichaPax/previsualizar_fichas.py</pre></div>
+        </div>
+      </div>
+
+      <hr style="margin:18px 0;border:none;border-top:1px solid #eee">
+
+      <h3 style="margin:0 0 8px 0">Notas</h3>
+      <ul>
+        <li class="small">Coloca el CSV diario en <code>python/fichaPax/</code> o pásalo como argumento al script si así está implementado.</li>
+        <li class="small">Las fichas generadas se guardan en <code>python/fichaPax/fichas/</code>.</li>
+        <li class="small">Los scripts deben ejecutarse localmente; no hay ejecución de Python desde el navegador.</li>
+      </ul>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:18px;gap:8px;flex-wrap:wrap;">
+        <a href="../index.html" class="menu-button secondary">⬅️ Volver al Menú</a>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
