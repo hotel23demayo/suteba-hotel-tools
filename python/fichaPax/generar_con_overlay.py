@@ -40,7 +40,7 @@ def crear_overlay_datos(datos_titular, num_pasajeros, acompanantes=[], todas_hab
     # ===== DATOS PERSONALES =====
     # Apellido y nombre
     y_nombre = height - 57 * mm
-    c.drawString(70 * mm, y_nombre, datos_titular['Apellido y nombre'])
+    c.drawString(70 * mm, y_nombre, datos_titular['Apellido y nombre'].upper())
     
     # Documento tipo y número
     y_doc = height - 65 * mm
@@ -80,7 +80,7 @@ def crear_overlay_datos(datos_titular, num_pasajeros, acompanantes=[], todas_hab
         y_linea = y_acomp_inicial - (idx * espaciado)
         
         # Nombre del acompañante
-        c.drawString(45 * mm, y_linea, acomp['Apellido y nombre'])
+        c.drawString(45 * mm, y_linea, acomp['Apellido y nombre'].upper())
         
         # Documento del acompañante
         doc_acomp = f"{acomp['Tipo documento']}: {acomp['Nro. doc.']}"

@@ -11,12 +11,26 @@ Actualizar index.html principal para que apunte a client/fichaPax.html. ✅
 Documentación en README.md con referencia CLI y ubicación de salida. ✅
 Corregir scripts Python para buscar fichaPax.pdf relativo al directorio del script. ✅
 
-Estado actual: MVP funcional. Usuarios no técnicos pueden generar fichas desde el navegador (drag & drop CSV → ZIP con PDFs). CLI disponible para usuarios avanzados.
+✅ COMPLETADO (03/01/2026):
+
+Implementar búsqueda individual en UI web (client/fichaPax.html): ✅
+  - Eliminar generación masiva ZIP de la interfaz web
+  - Agregar campo de búsqueda en tiempo real (voucher/DNI/apellido)
+  - Mostrar resultados con información detallada de cada voucher
+  - Botón "Generar ficha" individual para cada resultado
+  - Descarga directa de PDF único (ficha_VOUCHER.pdf)
+  - Vista previa del PDF generado en iframe
+
+IMPORTANTE: 
+- UI web: solo generación individual (búsqueda + descarga única)
+- Scripts Python CLI: mantienen generación masiva (ZIP con todas las fichas)
+
+Estado actual: Sistema optimizado para recepción. Búsqueda rápida y generación on-demand (1 PDF en ~1s). CLI disponible para generación masiva si se necesita.
 
 Sugerencias para futuras mejoras:
 - Añadir validación de CSV con mensajes de error específicos (campos faltantes, formato incorrecto).
 - Implementar modo "editar posiciones en vivo" en la UI para ajustar coordenadas sin editar JSON.
 - Agregar opción para personalizar nombre del ZIP descargado (ej: "fichas_hotel_fecha.zip").
-- Considerar agregar preview de cada ficha individual antes de generar el ZIP completo.
 - Tests automatizados (Playwright/Puppeteer) para verificar generación end-to-end.
 - Modo "agrupación manual" para casos donde el agrupamiento automático no sea correcto.
+- Sistema de tracking de check-ins realizados (marcar vouchers como ✓ procesados).

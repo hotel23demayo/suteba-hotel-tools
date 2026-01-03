@@ -8,9 +8,6 @@
   <style>
     .drop{border:2px dashed #888;padding:20px;text-align:center;margin-bottom:10px;cursor:pointer}
     .drop:hover{background:#f9f9f9}
-    table{border-collapse:collapse;width:100%;margin-top:10px}
-    table th,table td{border:1px solid #ddd;padding:6px;font-size:13px}
-    #previewFrame{width:100%;height:600px;border:1px solid #ccc;margin-top:12px}
     .controls{margin-top:12px}
   </style>
 </head>
@@ -29,15 +26,18 @@
     <section class="card">
       <div class="drop" id="dropArea">Arrastra un archivo CSV aquí, o <input type="file" id="fileInput" accept=".csv" /></div>
       <div id="fileInfo"></div>
-      <div id="preview"></div>
 
-      <div class="controls">
-        <button id="generateBtn" disabled>Descargar fichas (ZIP)</button>
-        <span id="status" style="margin-left:8px"></span>
+      <div class="controls" id="controlsArea" style="display:none">
+        <h3>Buscar pasajero</h3>
+        <input type="text" id="searchInput" placeholder="Buscar por voucher, DNI o apellido..." style="width:100%;max-width:600px;padding:10px;font-size:14px;margin-bottom:16px" />
+        <span id="status" style="margin-left:8px;display:block;margin-bottom:12px"></span>
+        <div id="searchResults" style="margin-top:12px"></div>
       </div>
 
-      <div id="thumbnails"></div>
-      <iframe id="previewFrame" title="preview"></iframe>
+      <div id="previewArea" style="display:none;margin-top:20px">
+        <h4>Vista previa</h4>
+        <iframe id="previewFrame" title="preview" style="width:100%;height:600px;border:1px solid #ccc"></iframe>
+      </div>
 
       <hr style="margin:18px 0;border:none;border-top:1px solid #eee">
       <div style="display:flex;justify-content:flex-end;margin-top:18px;gap:8px;flex-wrap:wrap;">
@@ -49,7 +49,6 @@
   <!-- Dependencies -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
   <script src="js/fichaPax.js"></script>
 </body>
 </html>

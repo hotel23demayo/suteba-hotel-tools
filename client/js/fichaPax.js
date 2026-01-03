@@ -2,10 +2,11 @@
   const dropArea = document.getElementById('dropArea');
   const fileInput = document.getElementById('fileInput');
   const fileInfo = document.getElementById('fileInfo');
-  const preview = document.getElementById('preview');
-  const generateBtn = document.getElementById('generateBtn');
+  const controlsArea = document.getElementById('controlsArea');
+  const searchInput = document.getElementById('searchInput');
+  const searchResults = document.getElementById('searchResults');
   const status = document.getElementById('status');
-  const thumbnails = document.getElementById('thumbnails');
+  const previewArea = document.getElementById('previewArea');
   const previewFrame = document.getElementById('previewFrame');
 
   let parsedRows = [];
@@ -34,33 +35,76 @@
       skipEmptyLines:true,
       complete: function(results){
         parsedRows = results.data;
-        status.textContent = `Filas: ${parsedRows.length}`;
-        // compute groups by voucher for ZIP generation
         grouped = groupByVoucher(parsedRows);
-        renderPreview(parsedRows);
-        updateGenerateLabel();
-        generateBtn.disabled = parsedRows.length===0;
+        status.textContent = `✅ ${grouped.length} vouchers cargados`;
+        // Show search UI
+        controlsArea.style.display = 'block';
+        searchInput.focus();
       },
       error: function(err){ status.textContent = 'Error parseando CSV: '+err.message }
     });
   }
 
-  function renderPreview(rows){
-    const sample = rows.slice(0,10);
-    let html = '<table><thead><tr>' + Object.keys(sample[0]||{}).map(h=>`<th>${h}</th>`).join('') + '</tr></thead><tbody>';
-    sample.forEach(r => {
-      html += '<tr>' + Object.values(r).slice(0,Object.keys(r).length).map(c=>`<td>${escapeHtml(String(c||''))}</td>`).join('') + '</tr>';
-    });
-    html += '</tbody></table>';
-    preview.innerHTML = html;
-  }
 
   function escapeHtml(s){ return s.replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[c]) }
 
-  // Update the generate button label to show the number of fichas to download
-  function updateGenerateLabel(){
-    const n = (grouped && grouped.length) ? grouped.length : (parsedRows.length || 0);
-    generateBtn.textContent = n > 0 ? `Descargar ${n} ficha${n===1? '': 's'} (ZIP)` : 'Descargar fichas (ZIP)';
+  // Search functionality
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    if(query.length === 0){
+      searchResults.innerHTML = '<p style="color:#666">Ingrese voucher, DNI o apellido para buscar</p>';
+      previewArea.style.display = 'none';
+      return;
+    }
+    const matches = grouped.filter(g => {
+      const voucherMatch = g.voucher.toLowerCase().includes(query);
+      const dniMatch = (g.titular['Nro. doc.'] || g.titular['Nro doc'] || '').toString().includes(query);
+      const apellidoMatch = (g.titular['Apellido y nombre'] || g.titular['Nombre'] || '').toLowerCase().includes(query);
+      return voucherMatch || dniMatch || apellidoMatch;
+    });
+    renderSearchResults(matches, query);
+  });
+
+  function renderSearchResults(matches, query){
+    if(matches.length === 0){
+      searchResults.innerHTML = `<p style="color:#999">No se encontraron resultados para "${escapeHtml(query)}"</p>`;
+      previewArea.style.display = 'none';
+      return;
+    }
+    let html = `<p style="margin-bottom:12px;color:#333">Se encontraron <strong>${matches.length}</strong> resultado(s):</p>`;
+    html += '<div style="display:grid;gap:12px">';
+    matches.forEach((g, idx) => {
+      const nombre = (g.titular['Apellido y nombre'] || g.titular['Nombre'] || 'Sin nombre').toUpperCase();
+      const dni = g.titular['Nro. doc.'] || g.titular['Nro doc'] || 'Sin DNI';
+      const voucher = g.voucher || 'Sin voucher';
+      const habitaciones = (g.todas_habitaciones && g.todas_habitaciones.length > 0) ? g.todas_habitaciones.join(', ') : 'Sin asignar';
+      const numPax = g.num_pasajeros || 1;
+      html += `
+        <div style="border:1px solid #ddd;padding:12px;border-radius:6px;background:#f9f9f9">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <div style="font-weight:bold;font-size:15px;margin-bottom:4px">${escapeHtml(nombre)}</div>
+              <div style="font-size:13px;color:#555">Voucher: ${escapeHtml(voucher)} | DNI: ${escapeHtml(dni)}</div>
+              <div style="font-size:13px;color:#555">Habitación: ${escapeHtml(habitaciones)} | Pasajeros: ${numPax}</div>
+            </div>
+            <div>
+              <button class="generateSingleBtn" data-index="${idx}" style="padding:8px 16px;background:#007bff;color:white;border:none;border-radius:4px;cursor:pointer;font-size:14px">Generar ficha</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    searchResults.innerHTML = html;
+    
+    // Attach event listeners to buttons
+    document.querySelectorAll('.generateSingleBtn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const idx = parseInt(e.target.dataset.index);
+        const group = matches[idx];
+        await generateSingleVoucher(group);
+      });
+    });
   }
 
   // Group rows by Voucher and pick titular (oldest by Edad) + accompanantes
@@ -89,47 +133,42 @@
     return groups;
   }
 
-  // Basic PDF generation using pdf-lib and the existing template in python/fichaPax/fichaPax.pdf
-  async function generateAll(){
-    generateBtn.disabled = true; status.textContent = 'Generando PDFs...'; thumbnails.innerHTML='';
-    const templateUrl = '/python/fichaPax/fichaPax.pdf';
-    const templateBytes = await fetch(templateUrl).then(r=>r.arrayBuffer());
-    const zip = new JSZip();
-
-    const groupsList = (grouped && grouped.length) ? grouped : groupByVoucher(parsedRows);
-    // Limit thumbnail previews to a small number (examples only)
-    let thumbsShown = 0; const maxThumbs = 2;
-    for(let i=0;i<groupsList.length;i++){
-      const group = groupsList[i];
-      status.textContent = `Generando ${i+1}/${groupsList.length}`;
-      const pdfBytes = await fillTemplate(templateBytes, group, i);
-      const nameBase = sanitizeFilename((group.voucher || group.titular['Apellido y nombre'] || group.titular['Nombre'] || ('ficha_'+(i+1))).toString());
-      const name = `${nameBase}_${i+1}.pdf`;
-      zip.file(name, pdfBytes);
-
-      // show preview thumb for first few (limit to maxThumbs examples)
-      if(thumbsShown < maxThumbs){
-        const blob = new Blob([pdfBytes], {type:'application/pdf'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.textContent = name; a.target='_blank';
-        const div = document.createElement('div'); div.style.margin='6px'; div.appendChild(a); thumbnails.appendChild(div);
-        if(thumbsShown===0) previewFrame.src = url;
-        thumbsShown++;
-      }
-      await sleep(50);
+  // Generate single voucher PDF
+  async function generateSingleVoucher(group){
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generando...';
+    
+    try {
+      status.textContent = '⏳ Generando PDF...';
+      const templateUrl = '/python/fichaPax/fichaPax.pdf';
+      const templateBytes = await fetch(templateUrl).then(r=>r.arrayBuffer());
+      
+      const pdfBytes = await fillTemplate(templateBytes, group, 0);
+      
+      // Show preview
+      const blob = new Blob([pdfBytes], {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      previewFrame.src = url;
+      previewArea.style.display = 'block';
+      
+      // Download PDF
+      const nameBase = sanitizeFilename((group.voucher || group.titular['Apellido y nombre'] || group.titular['Nombre'] || 'ficha').toString());
+      const name = `ficha_${nameBase}.pdf`;
+      triggerDownload(blob, name);
+      
+      status.textContent = '✅ Ficha generada y descargada';
+      setTimeout(() => {
+        status.textContent = `✅ ${grouped.length} vouchers cargados`;
+      }, 3000);
+    } catch(err) {
+      status.textContent = '❌ Error generando PDF: ' + err.message;
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalText;
     }
-
-    // Show a small summary about number of generated files and how many examples are shown
-    const shown = Math.min(maxThumbs, groupsList.length);
-    const info = document.createElement('div'); info.style.margin='6px 0'; info.textContent = `Mostrando ${shown} de ${groupsList.length} fichas como ejemplo.`;
-    thumbnails.prepend(info);
-
-    status.textContent = 'Creando ZIP...';
-    const zipBlob = await zip.generateAsync({type:'blob'}, (meta)=>{ status.textContent = `Comprimiendo: ${Math.round(meta.percent)}%`; });
-    triggerDownload(zipBlob, 'fichas.zip');
-    status.textContent = 'Listo';
-    generateBtn.disabled = false;
-    updateGenerateLabel();
   }
 
   async function fillTemplate(templateBytes, group, idx){
@@ -161,7 +200,7 @@
     };
 
     // Draw main fields using the map
-    const name = tVal(['Apellido y nombre','Nombre','Nombre completo','NombrePax','Nombre y Apellido']);
+    const name = tVal(['Apellido y nombre','Nombre','Nombre completo','NombrePax','Nombre y Apellido']).toUpperCase();
     if(name && pos['Apellido y nombre']){
       const p = pos['Apellido y nombre'];
       const x = p.x_mm * mmToPt;
@@ -221,7 +260,7 @@
       const p = pos['Acomp'];
       const acomp = group.acompanantes || [];
       for(let i=0;i<Math.min(acomp.length, p.max); i++){
-        const an = acomp[i]['Apellido y nombre'] || acomp[i]['Nombre'] || '';
+        const an = (acomp[i]['Apellido y nombre'] || acomp[i]['Nombre'] || '').toUpperCase();
         const ad = (acomp[i]['Tipo documento']? (acomp[i]['Tipo documento'] + ': ') : '') + (acomp[i]['Nro. doc.'] || acomp[i]['Nro doc'] || '');
         const y = pageHeight - ((p.y_first_top_mm + (i) * p.spacing_mm) * mmToPt);
         const xName = p.x_mm_name * mmToPt;
@@ -289,12 +328,9 @@
   }
 
   function sanitizeFilename(s){ return s.replace(/[^a-z0-9\-_\.]/ig,'_').slice(0,120); }
-  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
   function triggerDownload(blob, name){
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
   }
-
-  generateBtn.addEventListener('click', generateAll);
 
 })();
