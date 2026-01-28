@@ -2,7 +2,7 @@
 
 Sistema web unificado para procesamiento de datos hoteleros, generación de vouchers de comidas y gestión de reservas.
 
-**Última actualización:** Enero 2026 - Interfaz unificada con Drag & Drop y lanzador de escritorio
+**Última actualización:** Enero 2026 - Soporte completo para Pensión Completa (jubilados PPJ)
 
 ---
 
@@ -36,15 +36,22 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 
 ## 🎯 Características Principales
 
-### 🎫 Generador de Vouchers (MAP/PC)
-- Toggle entre Media Pensión y Pensión Completa
+### 🎫 Generador de Vouchers
+- **Páginas separadas** para Media Pensión (MAP) y Pensión Completa (PC)
+- **Media Pensión**: Solo cenas (trabajadores)
+- **Pensión Completa**: Almuerzos y cenas (jubilados PPJ)
 - Cálculo automático de comidas por estadía
-- Casillas de tildado por día organizadas (Almuerzo/Cena)
+- Casillas de tildado por día organizadas
 - Formato optimizado para impresión (4 vouchers por A4)
+- Ordenamiento automático por número de habitación
 
 ### 📋 Procesador de Reservas (Rooming)
+- **Páginas separadas** para MAP y PC con filtrado automático
+- Rooming MAP: Filtra solo "Media Pensión"
+- Rooming PC: Filtra solo "Pensión Completa"  
+- Campos fijos en orden específico para impresión
 - Ordenamiento automático por habitación
-- Exportación a CSV compatible con LibreOffice
+- Exportación a CSV compatible con LibreOffice (separador punto y coma)
 - Estadísticas de ocupación
 
 ### 👤 Ficha Pax
@@ -56,7 +63,27 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 
 ### ✨ Mejoras Recientes (Enero 2026)
 
-#### Actualización más reciente (Enero 6, 2026)
+#### Actualización más reciente (Enero 26, 2026)
+
+**🎫 Páginas separadas para MAP y Pensión Completa**
+- Creados `vouchers.html` (Media Pensión) y `vouchers-pc.html` (Pensión Completa)
+- Sistema de override de configuración sin modificar código base
+- Cada página carga automáticamente su modo correspondiente
+- Filtrado automático: PC muestra almuerzos y cenas, MAP solo cenas
+
+**📊 Rooming lists separados por tipo de pensión**
+- `rooming.html` para Media Pensión (trabajadores)
+- `rooming-pc.html` para Pensión Completa (jubilados PPJ)
+- Campos fijos en orden específico: Nro. habitación, Fecha ingreso/egreso, Plazas, Tipo doc, DNI, Nombre, Edad, Voucher, Tipo hab, Observación
+- Filtrado automático por tipo de servicio
+- Exportación CSV con separador punto y coma para LibreOffice
+
+**🏠 Menu principal actualizado**
+- 5 secciones claras: Vouchers MAP, Vouchers PC, Rooming MAP, Rooming PC, Fichas
+- Emojis distintivos para cada funcionalidad
+- Navegación intuitiva según tipo de contingente
+
+#### Actualización anterior (Enero 6, 2026)
 
 **🔧 Corrección dependencias html2pdf**
 - Agregada librería `html2pdf.js` a `fichaPax.html` (corrige error en Ubuntu nativo)
@@ -112,8 +139,10 @@ suteba-hotel-tools/
 ├── SUTEBA-Hotel-Tools.desktop    # Lanzador de aplicación Ubuntu
 │
 ├── client/                       # Aplicación web
-│   ├── vouchers.html            # Generador de vouchers MAP/PC
-│   ├── rooming.html             # Procesador de reservas
+│   ├── vouchers.html            # Generador vouchers Media Pensión (MAP)
+│   ├── vouchers-pc.html         # Generador vouchers Pensión Completa (PC)
+│   ├── rooming.html             # Rooming Media Pensión
+│   ├── rooming-pc.html          # Rooming Pensión Completa
 │   ├── fichaPax.html            # Generador de fichas + vouchers
 │   ├── src/
 │   │   ├── app.js               # Bootstrap, Drag & Drop, configuración
@@ -169,9 +198,10 @@ El navegador se abrirá automáticamente en `http://localhost:8000/index.html`
 
 ### Cambios comunes y dónde hacerlos
 
-- **Cambiar modo inicial**: Editar `APP_CONFIG.mode` en [client/src/app.js](client/src/app.js)
+- **Modo por defecto en páginas**: Usar `window.APP_CONFIG_OVERRIDE` antes de cargar `app.js`
 - **Nuevo formato CSV**: Extender `parseCSV` en [client/src/lib/parser.js](client/src/lib/parser.js)
 - **Reglas de comidas**: Modificar `mealMultiplier` en [client/src/lib/business.js](client/src/lib/business.js)
+- **Campos rooming PC**: Editar array `REPORT_FIELDS` en [client/rooming-pc.html](client/rooming-pc.html)
 
 ### Scripts Python (Utilidades)
 

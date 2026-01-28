@@ -19,8 +19,16 @@ const APP_CONFIG = {
   }
 };
 
+// Apply override if set (allows different pages to use different modes)
+if (window.APP_CONFIG_OVERRIDE) {
+  Object.assign(APP_CONFIG, window.APP_CONFIG_OVERRIDE);
+  console.log('✅ Config override aplicado. Modo:', APP_CONFIG.mode);
+}
+
 // Global data storage
 let relevantData = [];
+
+console.log('📝 APP_CONFIG inicializado:', APP_CONFIG.mode);
 
 // Setup drag & drop on page load
 document.addEventListener('DOMContentLoaded', () => {
@@ -104,14 +112,22 @@ function processFile(file) {
     let warnings = [];
     if (pcCount > 0 && APP_CONFIG.mode === 'MAP') {
       warnings.push(`${pcCount} fila(s) con Pensión Completa detectadas: se están ignorando en modo MAP.`);
+      warnings.push('Para procesar PC use la página <a href="vouchers-pc.html" style="color:#856404;text-decoration:underline">Vouchers Pensión Completa</a>.');
     }
+    
+    const mapCount = allParsed.reduce((acc, r) => acc + (normalize(r.servicios).includes('MEDIA PENSION') ? 1 : 0), 0);
+    if (mapCount > 0 && APP_CONFIG.mode === 'PC') {
+      warnings.push(`${mapCount} fila(s) con Media Pensión detectadas: se están ignorando en modo PC.`);
+      warnings.push('Para procesar MAP use la página <a href="vouchers.html" style="color:#856404;text-decoration:underline">Vouchers Media Pensión</a>.');
+    }
+    
     if (invalidDates > 0) {
       warnings.push(`${invalidDates} registro(s) con fechas inválidas o duración <= 0.`);
     }
 
     if (warnings.length > 0) {
       warningsDiv.style.display = 'block';
-      warningsDiv.innerHTML = `<strong>Advertencia:</strong> ${warnings.join(' ')} <span style="display:block;margin-top:8px;color:#856404;font-size:13px">Para procesar PC temporalmente cambie el modo a 'PC' en la interfaz o ajuste <code>APP_CONFIG.mode</code>.</span>`;
+      warningsDiv.innerHTML = `<strong>Advertencia:</strong> ${warnings.join(' ')}`;
     } else {
       warningsDiv.style.display = 'none';
       warningsDiv.innerHTML = '';
