@@ -1,87 +1,51 @@
-# Solución a problemas de CORS y función faltante
+# Solución a problemas de CORS
 
-## Problemas identificados y soluciones aplicadas
+## Problema
 
-### 1. Error CORS al abrir archivos directamente
-**Problema:** Al abrir `fichaPax.html` con doble clic (protocolo `file://`), el navegador bloqueaba las peticiones fetch por políticas CORS.
+Al abrir archivos HTML con doble clic (`file://`), el navegador bloquea algunas operaciones por políticas de CORS.
 
-**Solución:** 
-- Se crearon scripts para iniciar un servidor local automáticamente:
-  - `start-server.sh` (Linux/Mac)
-  - `start-server.bat` (Windows)
-- Ambos scripts inician Python HTTP server en puerto 8000 y muestran las URLs disponibles
+## Solución vigente
 
-**Uso:**
+Usar siempre un servidor HTTP local desde la raíz del proyecto.
+
+### Opción 1 (recomendada): launcher principal
+
 ```bash
-# En Linux/Mac
-./start-server.sh
-
-# En Windows
-start-server.bat
+./launcher.sh
 ```
 
-### 2. Función `generateMealVoucherHTML` no definida
-**Problema:** El código en [client/js/fichaPax.js](client/js/fichaPax.js) llamaba a `generateMealVoucherHTML` en la línea 185, pero esta función no existía.
+Abre la app en:
 
-**Solución:**
-Se implementó la función completa que:
-- Extrae datos del grupo (titular y acompañantes)
-- Calcula la duración de estadía a partir de fechas de ingreso/egreso
-- Calcula cantidad de comidas según modo (MAP=1 comida, PC=2 comidas por día)
-- Genera HTML completo con estilos CSS embebidos
-- Crea casillas de verificación por día según el tipo de servicio:
-  - **MAP:** Solo cena
-  - **PC:** Almuerzo y cena separados
+`http://localhost:8000/index.html`
 
-### 3. Actualización del README
-Se agregó documentación clara sobre:
-- Cómo usar los nuevos scripts de inicio
-- Advertencia sobre NO abrir archivos HTML directamente
-- Explicación de errores CORS
+### Opción 2: servidor manual
 
-## Archivos modificados
+```bash
+python3 -m http.server 8000
+```
 
-1. **[client/js/fichaPax.js](client/js/fichaPax.js):**
-   - Agregada función `generateMealVoucherHTML` completa (líneas ~414-627)
-   - Función genera HTML self-contained con estilos CSS embebidos
-   - Calcula automáticamente duración de estadía y cantidad de comidas
+Luego abrir:
 
-2. **[start-server.sh](start-server.sh):**
-   - Script bash nuevo para Linux/Mac
-   - Inicia servidor Python HTTP en puerto 8000
-   - Muestra URLs de todas las páginas disponibles
+`http://localhost:8000/index.html`
 
-3. **[start-server.bat](start-server.bat):**
-   - Script batch nuevo para Windows
-   - Funcionalidad idéntica a la versión bash
-   - Compatible con cmd.exe y PowerShell
+## Flujo Alicante (overlay PDF)
 
-4. **[README.md](README.md):**
-   - Agregada sección sobre uso de scripts
-   - Advertencia clara sobre CORS
-   - Instrucciones de inicio rápido mejoradas
+Para vouchers de Balneario Alicante, usar el launcher específico:
 
-## Cómo probar la solución
+```bash
+./launcher-vouchers-alicante.sh
+```
 
-1. Desde la raíz del proyecto, ejecuta:
-   ```bash
-   ./launcher.sh
-   ```
+Este flujo no depende del render HTML de `vouchers-balneario.html`; genera el PDF calibrado directamente en:
 
-2. Abre el navegador en: `http://localhost:8000/client/fichaPax.html`
+`python/vouchersAlicante/Vouchers_Alicante_Calibrado.pdf`
 
-3. Carga tu archivo CSV con los datos de reservas
+## Verificación rápida
 
-4. Busca un pasajero con servicio MAP o PC
+1. Ejecutar `./launcher.sh`
+2. Abrir `http://localhost:8000/index.html`
+3. Confirmar que la página carga sin errores en consola/red
 
-5. Haz clic en "Generar ficha"
+## Nota
 
-6. Deberías recibir:
-   - **ficha_[nombre].pdf** - Ficha del pasajero
-   - **voucher_MAP_[nombre].pdf** o **voucher_PC_[nombre].pdf** - Voucher de comidas
-
-## Próximos pasos (opcionales)
-
-- Agregar tests unitarios para `generateMealVoucherHTML`
-- Considerar agregar configuración para personalizar colores/estilos del voucher
-- Evaluar migrar parser CSV a PapaParse para mejor manejo de edge cases
+Los scripts legacy `start-server.sh` y `start-server.bat` ya no forman parte del flujo recomendado en este repo.

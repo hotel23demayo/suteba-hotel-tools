@@ -1,60 +1,63 @@
 #!/bin/bash
 # Ejemplos de uso del generador de vouchers Alicante con ajustes granulares
 
-# BÁSICO: Sin ajustes (línea base)
-python3 python/vouchersAlicante/generar_vouchers_overlay.py
+# ============================================
+# LANZADOR OFICIAL (WSL + Ubuntu nativo)
+# ============================================
+# Usa posiciones calibradas fijas y genera sin logo por defecto.
+./launcher-vouchers-alicante.sh
 
-# EJEMPLO 1: Ajustar solo el voucher #1 (2 mm hacia arriba)
+# Opcional: personalizar salida
+./launcher-vouchers-alicante.sh --output Vouchers_Alicante_Calibrado.pdf
+
+# Opcional: activar logo overlay explícitamente
+./launcher-vouchers-alicante.sh --with-logo
+
+# ============================================
+# EJECUCIÓN DIRECTA DEL SCRIPT (alternativa)
+# ============================================
+# Usa calibración final y deja logo desactivado por defecto.
 python3 python/vouchersAlicante/generar_vouchers_overlay.py \
   --csv consultaRegimenReport.csv \
   --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_Slot1_Arriba.pdf \
-  --slot-1-y-adjust-mm 2
+  --output Vouchers_Alicante_Calibrado.pdf \
+  --slot-1-y-adjust-mm 4.0 \
+  --slot-2-y-adjust-mm 5.5 \
+  --slot-3-y-adjust-mm 6.0
 
-# EJEMPLO 2: Ajustar voucher #1 y #3 (compensar inconsistencias)
+# EJEMPLO 1: Misma calibración, salida personalizada
 python3 python/vouchersAlicante/generar_vouchers_overlay.py \
   --csv consultaRegimenReport.csv \
   --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_Calibrado.pdf \
-  --slot-1-y-adjust-mm 1.5 \
-  --slot-3-y-adjust-mm -0.5
+  --output Vouchers_Alicante_$(date +%Y%m%d).pdf \
+  --slot-1-y-adjust-mm 4.0 \
+  --slot-2-y-adjust-mm 5.5 \
+  --slot-3-y-adjust-mm 6.0
 
-# EJEMPLO 3: Combinando ajuste global con granular
-# (todos bajan 1mm, pero el #1 solo baja 0.5mm)
+# EJEMPLO 2: Activar logo explícitamente
 python3 python/vouchersAlicante/generar_vouchers_overlay.py \
   --csv consultaRegimenReport.csv \
   --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_Global_Granular.pdf \
-  --y-adjust-mm -1.0 \
-  --slot-1-y-adjust-mm -0.5
+  --output Vouchers_Alicante_ConLogo.pdf \
+  --slot-1-y-adjust-mm 4.0 \
+  --slot-2-y-adjust-mm 5.5 \
+  --slot-3-y-adjust-mm 6.0 \
+  --with-logo
 
-# EJEMPLO 4: Con ajuste horizontal + granular vertical
+# EJEMPLO 3: Probar otro CSV manteniendo la calibración
 python3 python/vouchersAlicante/generar_vouchers_overlay.py \
-  --csv consultaRegimenReport.csv \
+  --csv otro_consultaRegimenReport.csv \
   --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_Fine_Tuned.pdf \
-  --x-adjust-mm 0.5 \
-  --slot-1-y-adjust-mm 2.0
-
-# EJEMPLO 5: Sin logo (más ligero)
-python3 python/vouchersAlicante/generar_vouchers_overlay.py \
-  --csv consultaRegimenReport.csv \
-  --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_SinLogo.pdf \
-  --no-logo
-
-# EJEMPLO 6: Todo ajustado para producción
-python3 python/vouchersAlicante/generar_vouchers_overlay.py \
-  --csv consultaRegimenReport.csv \
-  --template-pdf "VOUCHER ALICANTE.pdf" \
-  --output Vouchers_Alicante_Final.pdf \
-  --slot-1-y-adjust-mm 2.0 \
-  --logo assets/suteba_logo_3.jpg
+  --output Vouchers_Alicante_OtroCSV.pdf \
+  --slot-1-y-adjust-mm 4.0 \
+  --slot-2-y-adjust-mm 5.5 \
+  --slot-3-y-adjust-mm 6.0
 
 # ============================================
 # ALIAS RECOMENDADO (agregar a .bashrc / .zshrc)
 # ============================================
-# alias gen-vouchers-ok='python3 python/vouchersAlicante/generar_vouchers_overlay.py --slot-1-y-adjust-mm 2.0'
+# alias gen-vouchers-ok='./launcher-vouchers-alicante.sh'
 # Luego usar:
-#   gen-vouchers-ok --csv consultaRegimenReport.csv --template-pdf "VOUCHER ALICANTE.pdf"
+#   gen-vouchers-ok
+#   gen-vouchers-ok --output Vouchers_Alicante_Calibrado.pdf
 

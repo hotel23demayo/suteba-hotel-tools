@@ -17,6 +17,9 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
 
+SCRIPT_DIR = Path(__file__).resolve().parent
+
+
 @dataclass
 class VoucherRecord:
     voucher: str
@@ -88,10 +91,35 @@ def chunk_records(records: List[VoucherRecord], chunk_size: int = 3) -> Iterable
 
 
 def resolve_default_logo_path() -> str:
-    script_dir = Path(__file__).resolve().parent
-    repo_root = script_dir.parent.parent
+    repo_root = SCRIPT_DIR.parent.parent
     candidate = repo_root / "assets" / "suteba_logo_3.jpg"
     return str(candidate)
+
+
+def resolve_input_path(path_value: str) -> str:
+    path_obj = Path(path_value)
+    if path_obj.is_absolute():
+        return str(path_obj)
+
+    script_candidate = SCRIPT_DIR / path_obj
+    cwd_candidate = Path.cwd() / path_obj
+
+    if script_candidate.exists():
+        if cwd_candidate.exists() and cwd_candidate.resolve() != script_candidate.resolve():
+            print(f"⚠️ Se detectó otro archivo con el mismo nombre en el cwd. Se usa: {script_candidate}")
+        return str(script_candidate)
+
+    if cwd_candidate.exists():
+        return str(cwd_candidate)
+
+    return str(script_candidate)
+
+
+def resolve_output_path(path_value: str) -> str:
+    path_obj = Path(path_value)
+    if path_obj.is_absolute():
+        return str(path_obj)
+    return str(SCRIPT_DIR / path_obj)
 
 
 def overlay_page_for_chunk(
@@ -170,7 +198,6 @@ def generate_pdf(
     if not template_reader.pages:
         raise ValueError("La plantilla PDF no tiene páginas")
 
-    template_page = template_reader.pages[0]
     writer = PdfWriter()
 
     # Construir lista de ajustes por slot si se proporcionan
@@ -188,7 +215,7 @@ def generate_pdf(
         )
         overlay_reader = PdfReader(overlay_packet)
 
-        page = deepcopy(template_page)
+        page = deepcopy(PdfReader(template_pdf_path).pages[0])
         page.merge_page(overlay_reader.pages[0])
         writer.add_page(page)
 
@@ -201,17 +228,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--csv",
         default="consultaRegimenReport.csv",
-        help="Ruta al CSV de reservas (default: consultaRegimenReport.csv)",
+        help="Ruta al CSV de reservas (si es relativa, prioriza python/vouchersAlicante)",
     )
     parser.add_argument(
         "--template-pdf",
         default="VOUCHER ALICANTE.pdf",
-        help="Plantilla PDF exportada desde VOUCHER ALICANTE.odt",
+        help="Plantilla PDF exportada desde VOUCHER ALICANTE.odt (si es relativa, prioriza python/vouchersAlicante)",
     )
     parser.add_argument(
         "--output",
         default="Vouchers_Alicante_Final.pdf",
-        help="Archivo PDF de salida",
+        help="Archivo PDF de salida (si es relativa, se guarda en python/vouchersAlicante)",
     )
     parser.add_argument(
         "--x-adjust-mm",
@@ -249,35 +276,54 @@ def parse_args() -> argparse.Namespace:
         help="Ruta al logo que se inserta en cada voucher (default: assets/suteba_logo_3.jpg)",
     )
     parser.add_argument(
-        "--no-logo",
-        action="store_true",
-        help="Desactiva la inserción del logo en el overlay",
+        "--with-logo",
+        dest="no_logo",
+        action="store_false",
+        help="Activa la inserción del logo en el overlay",
     )
+    parser.add_argument(
+        "--no-logo",
+        dest="no_logo",
+        action="store_true",
+        help="Desactiva la inserción del logo en el overlay (default)",
+    )
+    parser.set_defaults(no_logo=True)
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    rows = load_csv_rows(args.csv)
+
+    csv_path = resolve_input_path(args.csv)
+    template_pdf_path = resolve_input_path(args.template_pdf)
+    output_pdf_path = resolve_output_path(args.output)
+    logo_path = resolve_input_path(args.logo)
+
+    print(f"ℹ️ CSV usado: {csv_path}")
+    print(f"ℹ️ Plantilla usada: {template_pdf_path}")
+    print(f"ℹ️ Salida PDF: {output_pdf_path}")
+    print(f"ℹ️ Logo overlay: {'desactivado' if args.no_logo else logo_path}")
+
+    rows = load_csv_rows(csv_path)
     records = group_by_voucher(rows)
 
     if not records:
         raise ValueError("No se encontraron vouchers en el CSV")
 
     generate_pdf(
-        template_pdf_path=args.template_pdf,
-        output_pdf_path=args.output,
+        template_pdf_path=template_pdf_path,
+        output_pdf_path=output_pdf_path,
         records=records,
         x_adjust_mm=args.x_adjust_mm,
         y_adjust_mm=args.y_adjust_mm,
-        logo_path=args.logo,
+        logo_path=logo_path,
         disable_logo=args.no_logo,
         slot_1_y_adjust_mm=args.slot_1_y_adjust_mm,
         slot_2_y_adjust_mm=args.slot_2_y_adjust_mm,
         slot_3_y_adjust_mm=args.slot_3_y_adjust_mm,
     )
 
-    print(f"✅ Vouchers generados: {args.output}")
+    print(f"✅ Vouchers generados: {output_pdf_path}")
     print(f"   Total de vouchers: {len(records)}")
 
 

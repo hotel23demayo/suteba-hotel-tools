@@ -2,7 +2,7 @@
 
 Sistema web unificado para procesamiento de datos hoteleros, generación de vouchers de comidas y gestión de reservas.
 
-**Última actualización:** Enero 2026 - Soporte completo para Pensión Completa (jubilados PPJ)
+**Última actualización:** Febrero 2026 - Flujo oficial de vouchers Alicante por overlay PDF
 
 ---
 
@@ -26,6 +26,17 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 ./launcher.sh
 ```
 
+### Vouchers Alicante (flujo oficial de impresión)
+
+```bash
+./launcher-vouchers-alicante.sh
+```
+
+Rutas operativas del flujo Alicante:
+- CSV de entrada: `python/vouchersAlicante/consultaRegimenReport.csv`
+- Plantilla PDF: `python/vouchersAlicante/VOUCHER ALICANTE.pdf`
+- Salida para imprimir: `python/vouchersAlicante/Vouchers_Alicante_Calibrado.pdf`
+
 ### Detener el servidor
 
 ```bash
@@ -40,6 +51,7 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 - **Páginas separadas** para Media Pensión (MAP) y Pensión Completa (PC)
 - **Media Pensión**: Solo cenas (trabajadores)
 - **Pensión Completa**: Almuerzos y cenas (jubilados PPJ)
+- **Balneario Alicante por overlay PDF** (flujo Python oficial para impresión)
 - Cálculo automático de comidas por estadía
 - Casillas de tildado por día organizadas
 - Formato optimizado para impresión (4 vouchers por A4)
@@ -60,6 +72,21 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 - Vista previa en iframe antes de descargar
 - PDFs descargables con overlay sobre template
 - Módulo independiente (solo fichas, no vouchers)
+
+### ✨ Mejoras Recientes
+
+#### Actualización más reciente (Febrero 22, 2026)
+
+**🏖️ Flujo oficial para vouchers Alicante (overlay PDF)**
+- Nuevo launcher raíz: `launcher-vouchers-alicante.sh` (WSL + Ubuntu nativo)
+- Posiciones calibradas finales por slot: `4.0 / 5.5 / 6.0 mm`
+- Resolución robusta de rutas: prioriza `python/vouchersAlicante` para CSV/plantilla/salida
+- Logo overlay desactivado por defecto (activable con `--with-logo`)
+- Corrección de paginación: un voucher por número de voucher sin repetición entre páginas
+
+**🧭 Menú principal ajustado**
+- Se ocultó el acceso a `client/vouchers-balneario.html` desde `index.html`
+- El archivo se conserva en el repo para respaldo técnico
 
 ### ✨ Mejoras Recientes (Enero 2026)
 
@@ -134,6 +161,7 @@ Sistema web unificado para procesamiento de datos hoteleros, generación de vouc
 suteba-hotel-tools/
 ├── index.html                    # Página principal con menú
 ├── launcher.sh                   # Lanzador principal (inicia servidor + navegador)
+├── launcher-vouchers-alicante.sh # Lanzador oficial vouchers Alicante (overlay PDF)
 ├── stop-server.sh                # Detiene el servidor
 ├── instalar-ubuntu-nativo.sh     # Instalador para Ubuntu (crea icono escritorio)
 ├── SUTEBA-Hotel-Tools.desktop    # Lanzador de aplicación Ubuntu
@@ -156,6 +184,11 @@ suteba-hotel-tools/
 │
 ├── assets/                       # Logos e imágenes
 │   └── suteba_logo_3.jpg
+│
+├── python/vouchersAlicante/      # Flujo oficial vouchers Balneario Alicante (overlay)
+│   ├── generar_vouchers_overlay.py
+│   ├── consultaRegimenReport.csv
+│   └── VOUCHER ALICANTE.pdf
 │
 ├── python/fichaPax/             # Utilidades Python para fichas
 │   ├── llenar_fichas.py
@@ -277,7 +310,10 @@ Ejecutar con: `python3 python/fichaPax/script.py`
 - **[GUIA_USUARIOS.md](GUIA_USUARIOS.md)** — Guía simple para usuarios finales
 - **[INSTALACION_POR_ENTORNO.md](INSTALACION_POR_ENTORNO.md)** — WSL vs Ubuntu nativo
 - **[SOLUCION_CORS.md](SOLUCION_CORS.md)** — Detalles técnicos del fix CORS
-- **[README_Old.md](README_Old.md)** — Versión anterior para referencia
+- **[Generador Automático (Overlay).md](docs/Generador%20Autom%C3%A1tico%20(Overlay).md)** — Flujo overlay de vouchers Alicante
+- **[AJUSTES_FINOS_POSICIONES.md](docs/AJUSTES_FINOS_POSICIONES.md)** — Calibración fina por slot
+- **[CHANGELOG_GRANULAR_ADJUSTS.md](docs/legacy/CHANGELOG_GRANULAR_ADJUSTS.md)** — Historial de ajustes granulares (legacy)
+- **[README_Old.md](docs/legacy/README_Old.md)** — Versión anterior para referencia (legacy)
 
 ---
 
@@ -317,8 +353,8 @@ Este es un proyecto interno de SUTEBA. Para cambios contactar al administrador d
 
 ---
 
-**Última actualización:** Febrero 19, 2026  
-**Versión:** 2.2  
+**Última actualización:** Febrero 22, 2026  
+**Versión:** 2.3  
 **Mantenido por:** Equipo IT SUTEBA
 
 ---
