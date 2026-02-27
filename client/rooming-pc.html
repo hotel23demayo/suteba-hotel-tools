@@ -164,7 +164,7 @@
         <h3>📋 Campos del Listado</h3>
         <p style="color: #666; font-size: 14px; margin: 10px 0;">
             Nro. habitación • Fecha de ingreso • Fecha de egreso • Cantidad plazas • Tipo documento • 
-            Nro. doc. • Apellido y nombre • Edad • Voucher • Tipo habitación • Observación habitación
+            Nro. doc. • Apellido y nombre • Edad • Observación habitación • Tipo habitación 
         </p>
     </div>
     
@@ -185,9 +185,8 @@
             { key: 'dni', label: 'Nro. doc.' },
             { key: 'passengerName', label: 'Apellido y nombre' },
             { key: 'age', label: 'Edad' },
-            { key: 'voucher', label: 'Voucher' },
-            { key: 'tipoHab', label: 'Tipo habitación' },
-            { key: 'observacion', label: 'Observación habitación' }
+            { key: 'observacion', label: 'Observación habitación' },
+            { key: 'tipoHab', label: 'Tipo habitación' }
         ];
 
         let allReservations = [];
@@ -283,7 +282,6 @@
                 const dni = fields[12] || '';
                 const passengerName = (fields[13] || '').toUpperCase();
                 const age = fields[14] || '';
-                const voucher = fields[6] || '';
                 const services = fields[16] || '';
                 const state = fields[23] || '';
                 const paquete = fields[17] || '';
@@ -307,7 +305,6 @@
                     passengerName,
                     age,
                     tipoHab,
-                    voucher,
                     services,
                     state,
                     paquete,

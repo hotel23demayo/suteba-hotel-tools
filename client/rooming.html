@@ -29,6 +29,21 @@
             background-color: #218838;
         }
 
+		.field-selector {
+			max-width: 800px;
+			margin: 20px auto;
+			padding: 20px;
+			background: #f8f9fa;
+			border-radius: 8px;
+			border: 1px solid #dee2e6;
+		}
+
+		.field-selector h3 {
+			margin-top: 0;
+			color: #495057;
+			font-size: 18px;
+		}
+
         #resultContainer {
             margin: 20px auto;
             max-width: 1000px;
@@ -81,6 +96,14 @@
             📂 Arrastra un archivo CSV aquí, o <input type="file" id="fileInput" accept=".csv" />
         </div>
     </div>
+
+	<div class="field-selector" id="fieldInfo" style="display: none;">
+		<h3>📋 Campos del Listado</h3>
+		<p style="color: #666; font-size: 14px; margin: 10px 0;">
+			Nro. habitación • Fecha de ingreso • Fecha de egreso • Cantidad plazas • Tipo documento • 
+			Nro. doc. • Apellido y nombre • Edad • Voucher • Servicio • Estado • Paquete • Sede • Observación habitación
+		</p>
+	</div>
     
 	<div id="resultContainer">
 	    <h2>Listado de Reservas</h2>
@@ -127,7 +150,7 @@
 	}
 	
 	// --- FUNCIONES PRINCIPALES ---
-	
+
 	function processFile(file) {
 	    const reader = new FileReader();
 	    
@@ -137,10 +160,12 @@
 
 	        const tableContainer = document.getElementById('tableOutput');
 	        const statsOutput = document.getElementById('statsOutput');
+	        const fieldInfo = document.getElementById('fieldInfo');
 	        
 	        // 1. Mostrar Estadísticas y Limpiar
 	        statsOutput.textContent = resultObject.stats;
 	        tableContainer.innerHTML = ''; // Limpiar visualización anterior
+	        fieldInfo.style.display = 'block';
 
 	        // 2. Construir y Mostrar la Tabla con Datos Ordenados
 	        tableContainer.innerHTML = buildHTMLTable(resultObject.reservations);
